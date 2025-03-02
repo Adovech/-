@@ -7,28 +7,43 @@
 // @match        https://web.whatsapp.com/*
 // @grant        none
 // ==/UserScript==
+
 (function() {
     'use strict';
 
-    // Список шаблонів тексту
-    const templates = [
-        "Reporting, a car seen entering the property.",
-        "Reporting, the car seen leaving the property.",
-        "Reporting, the person seen entering the property.",
-        "Reporting, the person seen leaving the property.",
-        "Updating, the person seen returning to the property.",
-        "Reporting, the person seen operating in this area.",
-        "Reporting, a coyote seen in this area.",
-        "Reporting, a delivery person seen leaving a parcel in the area.",
-        "Reporting, the delivery person seen leaving a parcel near the entrance.",
-        "Reporting, a delivery truck seen leaving the property.",
-        "Reporting, a delivery truck seen entering the property."
-    ];
+    // Список шаблонів тексту для Мулхолланд та Франклін
+    const templates = {
+        mulholland: [
+            "Reporting, a car seen entering the property.",
+            "Reporting, the car seen leaving the property.",
+            "Reporting, the person seen entering the property.",
+            "Reporting, the person seen leaving the property.",
+            "Updating, the person seen returning to the property.",
+            "Reporting, the person seen operating in this area.",
+            "Reporting, a coyote seen in this area.",
+            "Reporting, a delivery person seen leaving a parcel in the area.",
+            "Reporting, the delivery person seen leaving a parcel near the entrance.",
+            "Reporting, a delivery truck seen leaving the property.",
+            "Reporting, a delivery truck seen entering the property."
+        ],
+        franklin: [
+            "Reporting, a suspicious vehicle near the entrance.",
+            "Reporting, a person loitering near the gates.",
+            "Reporting, an unknown individual entering the area.",
+            "Reporting, a person leaving the premises at night.",
+            "Alert, strange activity observed on the premises.",
+            "Suspicious person near the back alley.",
+            "Caution, unknown vehicle parked in the area.",
+            "Reporting, an individual acting suspiciously around vehicles.",
+            "Alert, delivery vehicle parked for an extended time.",
+            "Reporting, an individual near the restricted area."
+        ]
+    };
 
     // Функція для перевірки, чи відкрите поле додавання підпису
     function isCaptionFieldOpen() {
         const captionElement = document.querySelector('.x10l6tqk.x13vifvy.xds687c.x1ey2m1c.x17qophe');
-        return captionElement && captionElement.offsetParent !== null;  // Перевіряємо чи елемент видимий
+        return captionElement && captionElement.offsetParent !== null; // Перевіряємо чи елемент видимий
     }
 
     // Функція для вставки тексту в правильне поле
@@ -62,7 +77,7 @@
             button.setAttribute('aria-label', 'Custom Button');
             button.setAttribute('title', 'Click Me');
             button.style.marginLeft = '10px';
-            button.style.backgroundColor = '#25D366';
+            button.style.backgroundColor = '#25D366'; // Оновлений колір кнопки
             button.style.borderRadius = '50%';
             button.style.padding = '8px';
             button.style.border = 'none';
@@ -89,40 +104,69 @@
             dropdown.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
             dropdown.style.transition = 'all 0.3s ease';
 
-            templates.forEach(template => {
-                const item = document.createElement('div');
-                item.textContent = template;
-                item.style.padding = '8px';
-                item.style.cursor = 'pointer';
-                item.style.color = '#333';
-                item.style.transition = 'background-color 0.3s ease, color 0.3s ease';
-                item.style.borderBottom = '1px solid #ddd';
+            // Додаємо вибір "Мулхолланд" або "Франклін"
+            const select = document.createElement('select');
+            select.style.marginBottom = '10px';
+            select.style.padding = '5px';
+            select.style.width = '100%';
 
-                item.addEventListener('mouseenter', () => {
-                    item.style.backgroundColor = '#25D366';
-                    item.style.color = '#fff';
-                });
+            const mulhollandOption = document.createElement('option');
+            mulhollandOption.value = 'mulholland';
+            mulhollandOption.textContent = 'Мулхолланд';
+            select.appendChild(mulhollandOption);
 
-                item.addEventListener('mouseleave', () => {
-                    item.style.backgroundColor = 'transparent';
-                    item.style.color = '#333';
-                });
+            const franklinOption = document.createElement('option');
+            franklinOption.value = 'franklin';
+            franklinOption.textContent = 'Франклін';
+            select.appendChild(franklinOption);
 
-                item.addEventListener('click', () => {
-                    insertTextIntoChat(template);
-                    dropdown.style.display = 'none';
-                });
-                dropdown.appendChild(item);
+            select.addEventListener('change', (event) => {
+                updateDropdown(event.target.value);
             });
 
+            dropdown.appendChild(select);
             document.body.appendChild(dropdown);
+
+            // Оновлення шаблонів в залежності від вибору
+            function updateDropdown(option) {
+                const templatesList = templates[option];
+                dropdown.querySelectorAll('.template-item').forEach(item => item.remove()); // Очищаємо список
+
+                templatesList.forEach(template => {
+                    const item = document.createElement('div');
+                    item.classList.add('template-item');
+                    item.textContent = template;
+                    item.style.padding = '8px';
+                    item.style.cursor = 'pointer';
+                    item.style.color = 'black'; // Чорний колір тексту
+                    item.style.transition = 'background-color 0.3s ease, color 0.3s ease';
+                    item.style.borderBottom = '1px solid #ddd';
+
+                    item.addEventListener('mouseenter', () => {
+                        item.style.backgroundColor = '#25D366';
+                        item.style.color = '#fff';
+                    });
+
+                    item.addEventListener('mouseleave', () => {
+                        item.style.backgroundColor = 'transparent';
+                        item.style.color = 'black'; // Повертаємо чорний колір
+                    });
+
+                    item.addEventListener('click', () => {
+                        insertTextIntoChat(template);
+                        dropdown.style.display = 'none';
+                    });
+
+                    dropdown.appendChild(item);
+                });
+            }
 
             button.addEventListener('click', () => {
                 const captionElement = document.querySelector('.x10l6tqk.x13vifvy.xds687c.x1ey2m1c.x17qophe');
                 if (captionElement) {
                     const rect = captionElement.getBoundingClientRect();
                     dropdown.style.left = `${rect.left}px`;
-                    dropdown.style.top = `${rect.top - dropdown.offsetHeight - 10}px`;
+                    dropdown.style.top = `${rect.top - dropdown.offsetHeight - 2}px`;
                     dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
                 }
             });
