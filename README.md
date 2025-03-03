@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Add Custom Button to WhatsApp Web (Styled)
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  Додає кастомну кнопку до панелі інструментів WhatsApp Web, в стилі WhatsApp
 // @author       You
 // @match        https://web.whatsapp.com/*
@@ -11,7 +11,7 @@
 (function() {
     'use strict';
 
-    // Список шаблонів тексту для Мулхолланд та Франклін
+    // Список шаблонів тексту для Мулхолланд та Джексон
     const templates = {
         mulholland: [
             "Reporting, a car seen entering the property.",
@@ -50,10 +50,8 @@
     function insertTextIntoChat(text) {
         let inputField;
         if (isCaptionFieldOpen()) {
-            // Якщо поле для підпису відкрите, вставляємо текст туди
             inputField = document.querySelector('.x10l6tqk.x13vifvy.xds687c.x1ey2m1c.x17qophe');
         } else {
-            // Якщо не відкрите, вставляємо в основне поле для повідомлень
             inputField = document.querySelector('div[contenteditable="true"][data-tab="10"]');
         }
 
@@ -67,7 +65,8 @@
 
     // Функція для створення і додавання кнопки
     function addCustomButton() {
-        const toolbar = document.querySelector('header .x1c4vz4f.xs83m0k');
+        // Знаходимо контейнер кнопок в панелі інструментів
+        const toolbar = document.querySelector("#app > div > div.x78zum5.xdt5ytf.x5yr21d > div > header > div > div > div > div > span > div > div:nth-child(2)");
 
         if (toolbar) {
             const button = document.createElement('button');
@@ -76,12 +75,28 @@
             );
             button.setAttribute('aria-label', 'Custom Button');
             button.setAttribute('title', 'Click Me');
-            button.style.marginLeft = '10px';
-            button.style.backgroundColor = '#25D366'; // Оновлений колір кнопки
             button.style.borderRadius = '50%';
-            button.style.padding = '8px';
+            // button.style.marginTop = '-125px';
+            button.style.padding = '10px';
             button.style.border = 'none';
             button.style.cursor = 'pointer';
+            button.style.transition = 'all 0.3s ease';
+
+            // Заміна позиціонування кнопки на центр панелі
+            //button.style.position = 'absolute';
+            //button.style.top = '50%'; // Центруємо по вертикалі
+            //button.style.left = '50%'; // Центруємо по горизонталі
+            //button.style.transform = 'translate(-50%, -50%)'; // Трансформуємо на 50% вліво і вверх
+            //button.style.zIndex = '9999'; // Переконатися, що кнопка буде поверх усіх інших елементів
+
+            // Add a hover effect to the button for better interaction
+            //button.addEventListener('mouseenter', () => {
+                //button.style.transform = 'scale(1.1) translate(-50%, -50%)';
+            //});
+
+            //button.addEventListener('mouseleave', () => {
+                //button.style.transform = 'scale(1) translate(-50%, -50%)';
+            //});
 
             const icon = document.createElement('span');
             icon.classList.add('xdt5ytf', 'x1cy8zhl', 'x5yr21d');
@@ -94,21 +109,25 @@
             const dropdown = document.createElement('div');
             dropdown.style.position = 'absolute';
             dropdown.style.display = 'none';
-            dropdown.style.backgroundColor = '#fff';
+            dropdown.style.backgroundColor = '#141b21';
             dropdown.style.border = '1px solid #ddd';
-            dropdown.style.borderRadius = '4px';
-            dropdown.style.padding = '10px';
+            dropdown.style.borderRadius = '8px'; // More rounded corners
+            dropdown.style.padding = '15px';
             dropdown.style.zIndex = '1000';
-            dropdown.style.maxHeight = '200px';
+            dropdown.style.maxHeight = '300px';
             dropdown.style.overflowY = 'auto';
             dropdown.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
             dropdown.style.transition = 'all 0.3s ease';
+            dropdown.style.minWidth = '200px'; // Ensuring dropdown is wide enough
 
             // Додаємо вибір "Мулхолланд" або "Франклін"
             const select = document.createElement('select');
             select.style.marginBottom = '10px';
-            select.style.padding = '5px';
+            select.style.padding = '8px'; // Slightly larger padding for select
             select.style.width = '100%';
+            select.style.borderRadius = '6px'; // Rounded corners for the select dropdown
+            select.style.border = '1px solid #ddd';
+            select.style.color = 'white';
 
             const mulhollandOption = document.createElement('option');
             mulhollandOption.value = 'mulholland';
@@ -117,7 +136,7 @@
 
             const franklinOption = document.createElement('option');
             franklinOption.value = 'franklin';
-            franklinOption.textContent = 'Франклін';
+            franklinOption.textContent = 'Джексон';
             select.appendChild(franklinOption);
 
             select.addEventListener('change', (event) => {
@@ -136,20 +155,21 @@
                     const item = document.createElement('div');
                     item.classList.add('template-item');
                     item.textContent = template;
-                    item.style.padding = '8px';
+                    item.style.padding = '10px';
                     item.style.cursor = 'pointer';
-                    item.style.color = 'black'; // Чорний колір тексту
+                    item.style.color = 'white';
                     item.style.transition = 'background-color 0.3s ease, color 0.3s ease';
                     item.style.borderBottom = '1px solid #ddd';
+                    item.style.borderRadius = '5px'; // Rounded corners for the items
 
                     item.addEventListener('mouseenter', () => {
-                        item.style.backgroundColor = '#25D366';
-                        item.style.color = '#fff';
+                        item.style.backgroundColor = '#1f2a30';
+                        item.style.color = '#FFFFFF';
                     });
 
                     item.addEventListener('mouseleave', () => {
                         item.style.backgroundColor = 'transparent';
-                        item.style.color = 'black'; // Повертаємо чорний колір
+                        item.style.color = 'white';
                     });
 
                     item.addEventListener('click', () => {
@@ -165,18 +185,19 @@
                 const captionElement = document.querySelector('.x10l6tqk.x13vifvy.xds687c.x1ey2m1c.x17qophe');
                 if (captionElement) {
                     const rect = captionElement.getBoundingClientRect();
-                    dropdown.style.left = `${rect.left}px`;
+                    dropdown.style.left = `${rect.left- dropdown.offsetHeight - 6}px`;
                     dropdown.style.top = `${rect.top - dropdown.offsetHeight - 2}px`;
                     dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
                 }
             });
 
-            toolbar.appendChild(button);
+            toolbar.appendChild(button); // Додаємо кнопку в контейнер панелі інструментів
         }
     }
 
+
     function checkAndAddButton() {
-        const toolbar = document.querySelector('header .x1c4vz4f.xs83m0k');
+        const toolbar = document.querySelector('.x1c4vz4f.xs83m0k');
         if (toolbar) {
             addCustomButton();
         } else {
